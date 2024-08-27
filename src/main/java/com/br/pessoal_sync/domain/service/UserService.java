@@ -1,83 +1,75 @@
 package com.br.pessoal_sync.domain.service;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.br.pessoal_sync.data.repository.UserRepository;
 import com.br.pessoal_sync.domain.dto.UserDto;
 import com.br.pessoal_sync.domain.exception.ConflictException;
+import com.br.pessoal_sync.domain.exception.InternalServerException;
 import com.br.pessoal_sync.domain.exception.NotFoundException;
 import com.br.pessoal_sync.domain.model.User;
+import com.br.pessoal_sync.http.validator.UserValidator;
 
 @Service
 public class UserService {
 
-    private UserRepository userRepository;
+    private final UserValidator userValidator;
+    private final UserDataService userDataService;
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    @Autowired
+    public UserService(UserValidator userValidator, UserDataService userDataService) {
+        this.userValidator = userValidator;
+        this.userDataService = userDataService;
     }
 
     public Long createUser(UserDto userDto) {
-        checkUser(userDto);
-        var user = new User();
-        user.setName(userDto.name());
-        user.setEmail(userDto.email());
-        user.setCpf(userDto.cpf());
-        user.setIsActive(true);
-        user.setCreatedAt(Instant.now());
-    
-        var userId = userRepository.save(user);
-        return userId.getId();
-    }
-
-    public Optional<User> getUserById(Long id) {
-        var user = existingUser(id);
-        return user;
-    }
-
-    public List<User> getUsersAll() {
-        return userRepository.findAll();
-    }
-
-    public Long updateUser(Long id, UserDto userdDto) {
-        Optional<User> existing = existingUser(id);
-
-        User user = existing.get();
-        user.setName(userdDto.name());
-        user.setEmail(userdDto.email());
-        user.setIsActive(userdDto.active());
-        user.setUpdatedAt(Instant.now());
-        var userId = userRepository.save(user);
-        return userId.getId();
-    }
-
-    public boolean deleteUserById(Long id) {
-        existingUser(id);
-        userRepository.deleteById(id);
-        return true;
-    }
-
-    private void checkUser(UserDto userDto) {
-        if (
-            !userRepository.findByName(userDto.name()).isEmpty()
-            &&
-            !userRepository.findByEmail(userDto.email()).isEmpty()
-            &&
-            !userRepository.findByCpf(userDto.cpf()).isEmpty()
-            ) {
-            throw new ConflictException();
+        try {
+            userValidator.validateUser(userDto);
+            return userDataService.createUser(userDto);
+        } catch (ConflictException e) {
+            logger.error("Erro ao criar usuário: ", e);
+            throw new ConflictException("");
+        } catch (RuntimeException e) {
+            logger.error("Erro inesperado ao criar usuário: ", e);
+            throw new InternalServerException(e.getMessage());
         }
     }
 
-    private Optional<User> existingUser(Long id) {
-        var user = userRepository.findById(id);
-        if (user.isEmpty()) {
-            throw new NotFoundException();
+    public User getUser(Long id) {
+        return userDataService.getUser(id);
+    }
+
+    public List<User> getUsers() {
+        return userDataService.getUsers();
+    }
+
+    public Long updateUser(Long id, UserDto userDto) {
+        try {
+            return userDataService.updateUser(id, userDto);
+        } catch (NotFoundException e) {
+            logger.error("Erro ao buscar usuário: ", e);
+            throw new NotFoundException("");
+        } catch (RuntimeException e) {
+            logger.error("Erro inesperado ao alterar usuário: ", e);
+            throw new  InternalServerException(e.getMessage());
         }
-        return user;
+    }
+
+    public boolean deleteUser(Long id) {
+        try {
+            userDataService.deleteUser(id);
+            return true;
+        } catch (NotFoundException e) {
+            logger.error("Erro ao buscar usuário: ", e);
+            throw new NotFoundException("");
+        } catch (RuntimeException e) {
+            logger.error("Erro inesperado ao deletar usuário: ", e);
+            throw new InternalServerException(e.getMessage());
+        }
     }
 }

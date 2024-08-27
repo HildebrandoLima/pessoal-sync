@@ -3,6 +3,7 @@ package com.br.pessoal_sync.http.controller;
 import java.util.List;
 import jakarta.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +27,7 @@ public class UserController {
 
     private UserService userService;
 
+    @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }
@@ -33,55 +35,40 @@ public class UserController {
     @PostMapping
     public ResponseEntity<Response> createUser(@Valid @RequestBody UserDto userDto) {
         userService.createUser(userDto);
-        Response response = new Response(
-            "Registro criado.",
-            List.of(),
-            HttpStatus.CREATED.value()
-        );
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return response("Registro criado.", List.of(), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Response> getUserById(@PathVariable("id") Long id) {
-        var user = userService.getUserById(id);
-        Response response = new Response(
-            "Registro listado.",
-            List.of(user.get()),
-            HttpStatus.OK.value()
-        );
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        var user = userService.getUser(id);
+        return response("Registro listado.", List.of(user), HttpStatus.OK);
     }
 
     @GetMapping
     public ResponseEntity<Response> getUsers() {
-        var users = userService.getUsersAll();
-        Response response = new Response(
-            "Registros listados.",
-            List.of(users),
-            HttpStatus.OK.value()
-        );
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        var users = userService.getUsers();
+        return response("Registros listados.", List.of(users), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Response> updateUser(@PathVariable("id") Long id, @Valid @RequestBody UserDto userDto) {
         userService.updateUser(id, userDto);
-        Response response = new Response(
-            "Registro alterado.",
-            List.of(),
-            HttpStatus.NO_CONTENT.value()
-        );
-        return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
+        return response("Registro alterado.", List.of(), HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> deleteUserById(@PathVariable("id") Long id) {
-        userService.deleteUserById(id);
+        userService.deleteUser(id);
+        return response("Registro deletado.", List.of(), HttpStatus.NO_CONTENT);
+    }
+
+    private ResponseEntity<Response> response(String message, Object data, HttpStatus status) {
         Response response = new Response(
-            "Registro deletado.",
-            List.of(),
-            HttpStatus.NO_CONTENT.value()
+            message,
+            data != null ? List.of(data) : List.of(),
+            "",
+            status.value()
         );
-        return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(response, status);
     }
 }

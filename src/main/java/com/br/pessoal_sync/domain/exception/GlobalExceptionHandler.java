@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Response> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = ex.getBindingResult().getAllErrors().stream()
+    public ResponseEntity<Response> handleValidationExceptions(MethodArgumentNotValidException e) {
+        Map<String, String> errors = e.getBindingResult().getAllErrors().stream()
             .collect(Collectors.toMap(
                 error -> ((FieldError) error).getField(),
                 error -> error.getDefaultMessage()
@@ -29,15 +29,16 @@ public class GlobalExceptionHandler {
             errors.entrySet().stream()
                 .map(entry -> Map.of(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList()),
+                e.getMessage(),
             HttpStatus.BAD_REQUEST.value()
         );
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Response> handleConstraintViolation(ConstraintViolationException ex) {
+    public ResponseEntity<Response> handleConstraintViolation(ConstraintViolationException e) {
         Map<String, String> errors = new HashMap<>();
-        ex.getConstraintViolations().forEach(violation -> {
+        e.getConstraintViolations().forEach(violation -> {
             String fieldName = violation.getPropertyPath().toString();
             String errorMessage = violation.getMessage();
             errors.put(fieldName, errorMessage);
@@ -48,36 +49,40 @@ public class GlobalExceptionHandler {
             errors.entrySet().stream()
                 .map(entry -> Map.of(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList()),
+                e.getMessage(),
             HttpStatus.BAD_REQUEST.value()
         );
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<Response> handleConflictException(ConflictException ex) {
+    public ResponseEntity<Response> handleConflictException(ConflictException e) {
         Response response = new Response(
             "Registro já existe.",
             List.of(),
+            e.getMessage(),
             HttpStatus.CONFLICT.value()
         );
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Response> handleResourceNotFound(NotFoundException ex) {
+    public ResponseEntity<Response> handleResourceNotFound(NotFoundException e) {
         Response response = new Response(
             "Registro não encontrado.",
             List.of(),
+            e.getMessage(),
             HttpStatus.NOT_FOUND.value()
         );
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Response> handleGeneralException(Exception ex) {
+    public ResponseEntity<Response> handleGeneralException(Exception e) {
         Response response = new Response(
             "Erro interno do servidor.",
             List.of(),
+            e.getMessage(),
             HttpStatus.INTERNAL_SERVER_ERROR.value()
         );
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
