@@ -1,8 +1,11 @@
 package com.br.pessoal_sync.controllers;
 
 import java.util.List;
+import jakarta.validation.Valid;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,11 +16,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.br.pessoal_sync.dtos.UserDto;
-import com.br.pessoal_sync.models.User;
+import com.br.pessoal_sync.exception.NotFoundException;
+import com.br.pessoal_sync.exception.Response;
 import com.br.pessoal_sync.services.UserService;
 
 @RestController
 @RequestMapping("/api/users")
+@Validated
 public class UserController {
 
     private UserService userService;
@@ -27,36 +32,57 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody UserDto userDto) {
+    public ResponseEntity<Response> createUser(@Valid @RequestBody UserDto userDto) {
         userService.createUser(userDto);
-        return ResponseEntity.created(null).build();
+        Response response = new Response(
+            "Registro listado.",
+            List.of(),
+            HttpStatus.CREATED.value()
+        );
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
+    public ResponseEntity<Response> getUserById(@PathVariable("id") Long id) {
         var user = userService.getUserById(id);
-        if (user.isPresent()) {
-            return ResponseEntity.ok(user.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        Response response = new Response(
+            "Registro listado.",
+            List.of(user.get()),
+            HttpStatus.OK.value()
+        );
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getUsers() {
+    public ResponseEntity<Response> getUsers() {
         var users = userService.getUsersAll();
-        return ResponseEntity.ok(users);
+        Response response = new Response(
+            "Registros listados.",
+            List.of(users),
+            HttpStatus.OK.value()
+        );
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateUser(@PathVariable("id") Long id, @RequestBody UserDto userDto) {
+    public ResponseEntity<Response> updateUser(@PathVariable("id") Long id, @Valid @RequestBody UserDto userDto) {
         userService.updateUser(id, userDto);
-        return ResponseEntity.noContent().build();
+        Response response = new Response(
+            "Registro alterado.",
+            List.of(),
+            HttpStatus.NO_CONTENT.value()
+        );
+        return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUserById(@PathVariable("id") Long id) {
+    public ResponseEntity<Response> deleteUserById(@PathVariable("id") Long id) {
         userService.deleteUserById(id);
-        return ResponseEntity.noContent().build();
+        Response response = new Response(
+            "Registro deletado.",
+            List.of(),
+            HttpStatus.NO_CONTENT.value()
+        );
+        return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
     }
 }

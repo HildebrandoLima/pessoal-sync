@@ -11,6 +11,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name="tb_user")
@@ -19,11 +22,17 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "name")
+    @Column(name = "name", unique = true)
+    @NotBlank(message = "O nome é obrigatório")
+    @Size(max = 100, message = "O nome não deve exceder 100 caracteres")
     private String name;
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
+    @NotBlank(message = "O e-mail é obrigatório")
+    @Email(message = "E-mail inválido")
     private String email;
-    @Column(name = "cpf")
+    @Column(name = "cpf", unique = true)
+    @NotBlank(message = "O CPF é obrigatório")
+    @Size(min = 14, max = 14, message = "CPF inválido")
     private String cpf;
     @Column(name = "active")
     private boolean active;
