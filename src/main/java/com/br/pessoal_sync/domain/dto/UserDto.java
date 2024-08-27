@@ -1,4 +1,4 @@
-package com.br.pessoal_sync.dtos;
+package com.br.pessoal_sync.domain.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

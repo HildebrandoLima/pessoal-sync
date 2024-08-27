@@ -1,4 +1,4 @@
-package com.br.pessoal_sync.exception;
+package com.br.pessoal_sync.domain.exception;
 
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;

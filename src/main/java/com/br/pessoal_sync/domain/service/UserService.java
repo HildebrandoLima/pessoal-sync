@@ -1,4 +1,4 @@
-package com.br.pessoal_sync.services;
+package com.br.pessoal_sync.domain.service;
 
 import java.time.Instant;
 import java.util.List;
@@ -6,11 +6,11 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.br.pessoal_sync.dtos.UserDto;
-import com.br.pessoal_sync.exception.ConflictException;
-import com.br.pessoal_sync.exception.NotFoundException;
-import com.br.pessoal_sync.models.User;
-import com.br.pessoal_sync.repositories.UserRepository;
+import com.br.pessoal_sync.data.repository.UserRepository;
+import com.br.pessoal_sync.domain.dto.UserDto;
+import com.br.pessoal_sync.domain.exception.ConflictException;
+import com.br.pessoal_sync.domain.exception.NotFoundException;
+import com.br.pessoal_sync.domain.model.User;
 
 @Service
 public class UserService {
@@ -43,7 +43,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public void updateUser(Long id, UserDto userdDto) {
+    public Long updateUser(Long id, UserDto userdDto) {
         Optional<User> existing = existingUser(id);
 
         User user = existing.get();
@@ -51,12 +51,14 @@ public class UserService {
         user.setEmail(userdDto.email());
         user.setIsActive(userdDto.active());
         user.setUpdatedAt(Instant.now());
-        userRepository.save(user);
+        var userId = userRepository.save(user);
+        return userId.getId();
     }
 
-    public void deleteUserById(Long id) {
+    public boolean deleteUserById(Long id) {
         existingUser(id);
         userRepository.deleteById(id);
+        return true;
     }
 
     private void checkUser(UserDto userDto) {

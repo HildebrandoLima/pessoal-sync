@@ -1,4 +1,4 @@
-package com.br.pessoal_sync.controllers;
+package com.br.pessoal_sync.http.controller;
 
 import java.util.List;
 import jakarta.validation.Valid;
@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.br.pessoal_sync.dtos.UserDto;
-import com.br.pessoal_sync.exception.Response;
-import com.br.pessoal_sync.services.UserService;
+import com.br.pessoal_sync.domain.dto.UserDto;
+import com.br.pessoal_sync.domain.exception.Response;
+import com.br.pessoal_sync.domain.service.UserService;
 
 @RestController
 @RequestMapping("/api/users")
@@ -34,7 +34,7 @@ public class UserController {
     public ResponseEntity<Response> createUser(@Valid @RequestBody UserDto userDto) {
         userService.createUser(userDto);
         Response response = new Response(
-            "Registro listado.",
+            "Registro criado.",
             List.of(),
             HttpStatus.CREATED.value()
         );

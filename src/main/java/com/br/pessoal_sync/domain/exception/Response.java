@@ -1,4 +1,4 @@
-package com.br.pessoal_sync.exception;
+package com.br.pessoal_sync.domain.exception;
 
 import java.util.List;
 

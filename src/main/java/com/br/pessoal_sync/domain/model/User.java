@@ -1,4 +1,4 @@
-package com.br.pessoal_sync.models;
+package com.br.pessoal_sync.domain.model;
 
 import java.time.Instant;
 
