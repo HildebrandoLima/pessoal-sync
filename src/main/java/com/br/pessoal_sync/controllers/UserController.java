@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.br.pessoal_sync.dtos.UserDto;
-import com.br.pessoal_sync.exception.NotFoundException;
 import com.br.pessoal_sync.exception.Response;
 import com.br.pessoal_sync.services.UserService;
 
