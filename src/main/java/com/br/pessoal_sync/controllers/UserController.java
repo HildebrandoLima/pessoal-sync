@@ -1,4 +1,4 @@
-package com.br.pessoal_sync.controller;
+package com.br.pessoal_sync.controllers;
 
 import java.util.List;
 
