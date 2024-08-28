@@ -27,7 +27,7 @@ public class UserService implements UserInterfaceService {
         this.userValidator = userValidator;
         this.userDataService = userDataService;
     }
-
+  
     public Long createUser(UserDto userDto) {
         try {
             userValidator.validateUser(userDto);
