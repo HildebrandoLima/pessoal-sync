@@ -1,4 +1,4 @@
-package com.br.pessoal_sync.data.repository;
+package com.br.pessoal_sync.repository;
 
 import java.util.List;
 

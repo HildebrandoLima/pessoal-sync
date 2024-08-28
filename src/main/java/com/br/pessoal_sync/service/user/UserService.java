@@ -1,4 +1,4 @@
-package com.br.pessoal_sync.domain.service.user;
+package com.br.pessoal_sync.service.user;
 
 import java.util.List;
 import java.util.Optional;
@@ -6,7 +6,7 @@ import java.util.Optional;
 import com.br.pessoal_sync.domain.dto.UserDto;
 import com.br.pessoal_sync.domain.model.User;
 
-public interface UserInterfaceService {
+public interface UserService {
 
     public Long createUser(UserDto userDto);
 

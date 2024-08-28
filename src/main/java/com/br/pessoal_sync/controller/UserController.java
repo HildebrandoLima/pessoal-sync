@@ -1,4 +1,4 @@
-package com.br.pessoal_sync.http.controller;
+package com.br.pessoal_sync.controller;
 
 import java.util.List;
 import jakarta.validation.Valid;
@@ -17,29 +17,33 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.br.pessoal_sync.domain.dto.UserDto;
+import com.br.pessoal_sync.domain.exception.ConflictException;
+import com.br.pessoal_sync.domain.exception.NotFoundException;
 import com.br.pessoal_sync.domain.exception.Response;
-import com.br.pessoal_sync.domain.service.user.UserService;
+import com.br.pessoal_sync.service.user.UserImplService;
 
 @RestController
 @RequestMapping("/api/users")
 @Validated
 public class UserController {
 
-    private UserService userService;
+    private UserImplService userService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserImplService userService) {
         this.userService = userService;
     }
 
     @PostMapping
     public ResponseEntity<Response> createUser(@Valid @RequestBody UserDto userDto) {
-        userService.createUser(userDto);
-        return response("Registro criado.", List.of(), HttpStatus.CREATED);
+        validateUserConflict(userDto);
+        Long user = userService.createUser(userDto);
+        return response("Registro criado.", List.of(user), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Response> getUserById(@PathVariable("id") Long id) {
+        validateUserException(id);
         var user = userService.getUser(id);
         return response("Registro listado.", List.of(user), HttpStatus.OK);
     }
@@ -52,14 +56,26 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Response> updateUser(@PathVariable("id") Long id, @Valid @RequestBody UserDto userDto) {
+        validateUserException(id);
         userService.updateUser(id, userDto);
         return response("Registro alterado.", List.of(), HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> deleteUserById(@PathVariable("id") Long id) {
+        validateUserException(id);
         userService.deleteUser(id);
         return response("Registro deletado.", List.of(), HttpStatus.NO_CONTENT);
+    }
+
+    private void validateUserException(Long id) {
+        userService.validateGetUser(id)
+        .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
+    }
+
+    public void validateUserConflict(UserDto userDto) {
+        String message = userService.validateUser(userDto);
+        throw new ConflictException(message);
     }
 
     private ResponseEntity<Response> response(String message, Object data, HttpStatus status) {

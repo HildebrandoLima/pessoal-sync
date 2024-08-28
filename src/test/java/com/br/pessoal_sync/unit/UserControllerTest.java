@@ -10,8 +10,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.br.pessoal_sync.domain.service.user.UserService;
-import com.br.pessoal_sync.http.controller.UserController;
+import com.br.pessoal_sync.controller.UserController;
+import com.br.pessoal_sync.service.user.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

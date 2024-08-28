@@ -1,5 +1,7 @@
 package com.br.pessoal_sync.domain.dto;
 
+import org.hibernate.validator.constraints.br.CPF;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -12,7 +14,7 @@ public record UserDto(
     @Email(message = "E-mail inválido")
     String email,
     @NotBlank(message = "CPF é obrigatório")
-    @Size(min = 14, max = 14, message = "CPF inválido")
+    @CPF(message = "CPF inválido")
     String cpf,
     boolean active
 ){}

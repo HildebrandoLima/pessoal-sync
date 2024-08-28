@@ -13,9 +13,9 @@ import com.br.pessoal_sync.domain.dto.UserDto;
 import com.br.pessoal_sync.domain.exception.ConflictException;
 import com.br.pessoal_sync.domain.exception.NotFoundException;
 import com.br.pessoal_sync.domain.model.User;
-import com.br.pessoal_sync.domain.service.user.UserDataService;
-import com.br.pessoal_sync.domain.service.user.UserService;
 import com.br.pessoal_sync.http.validator.UserValidator;
+import com.br.pessoal_sync.service.user.UserImplService;
+import com.br.pessoal_sync.service.user.UserService;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ public class UserServiceTest {
     private UserValidator userValidator;
 
     @Mock
-    private UserDataService userDataService;
+    private UserImplService userDataService;
 
     @InjectMocks
     private UserService userService;
