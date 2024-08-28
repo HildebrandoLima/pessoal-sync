@@ -1,4 +1,4 @@
-package com.br.pessoal_sync.domain.service;
+package com.br.pessoal_sync.domain.service.user;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ import com.br.pessoal_sync.domain.model.User;
 import com.br.pessoal_sync.http.validator.UserValidator;
 
 @Service
-public class UserService {
+public class UserService implements UserInterfaceService {
 
     private final UserValidator userValidator;
     private final UserDataService userDataService;
@@ -60,10 +60,9 @@ public class UserService {
         }
     }
 
-    public boolean deleteUser(Long id) {
+    public void deleteUser(Long id) {
         try {
             userDataService.deleteUser(id);
-            return true;
         } catch (NotFoundException e) {
             logger.error("Erro ao buscar usuário: ", e);
             throw new NotFoundException("");

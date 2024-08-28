@@ -1,4 +1,4 @@
-package com.br.pessoal_sync.domain.service;
+package com.br.pessoal_sync.domain.service.user;
 
 import java.time.Instant;
 import java.util.List;
@@ -12,7 +12,7 @@ import com.br.pessoal_sync.domain.exception.NotFoundException;
 import com.br.pessoal_sync.domain.model.User;
 
 @Service
-public class UserDataService {
+public class UserDataService implements UserInterfaceService {
 
     private UserRepository userRepository;
 

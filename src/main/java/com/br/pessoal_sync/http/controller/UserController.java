@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.br.pessoal_sync.domain.dto.UserDto;
 import com.br.pessoal_sync.domain.exception.Response;
-import com.br.pessoal_sync.domain.service.UserService;
+import com.br.pessoal_sync.domain.service.user.UserService;
 
 @RestController
 @RequestMapping("/api/users")
