@@ -65,7 +65,7 @@ public class UserController {
     private ResponseEntity<Response> response(String message, Object data, HttpStatus status) {
         Response response = new Response(
             message,
-            data != null ? List.of(data) : List.of(),
+            data,
             "",
             status.value()
         );

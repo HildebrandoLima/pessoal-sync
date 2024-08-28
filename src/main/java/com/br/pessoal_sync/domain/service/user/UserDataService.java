@@ -2,6 +2,7 @@ package com.br.pessoal_sync.domain.service.user;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,9 +32,8 @@ public class UserDataService implements UserInterfaceService {
         return userRepository.save(user).getId();
     }
 
-    public User getUser(Long id) {
-        return userRepository.findById(id)
-        .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
+    public Optional<User> getUser(Long id) {
+        return userRepository.findById(id);
     }
 
     public List<User> getUsers() {

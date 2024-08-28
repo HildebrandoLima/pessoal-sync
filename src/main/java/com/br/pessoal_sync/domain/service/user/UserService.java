@@ -1,6 +1,7 @@
 package com.br.pessoal_sync.domain.service.user;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,14 +34,15 @@ public class UserService implements UserInterfaceService {
             return userDataService.createUser(userDto);
         } catch (ConflictException e) {
             logger.error("Erro ao criar usuário: ", e);
-            throw new ConflictException("");
-        } catch (RuntimeException e) {
+            throw e;
+        } catch (InternalServerException e) {
             logger.error("Erro inesperado ao criar usuário: ", e);
-            throw new InternalServerException(e.getMessage());
+            throw e;
         }
     }
 
-    public User getUser(Long id) {
+    public Optional<User> getUser(Long id) {
+        userValidator.validateAndGetUser(id);
         return userDataService.getUser(id);
     }
 
@@ -50,25 +52,27 @@ public class UserService implements UserInterfaceService {
 
     public Long updateUser(Long id, UserDto userDto) {
         try {
+            userValidator.validateAndGetUser(id);
             return userDataService.updateUser(id, userDto);
         } catch (NotFoundException e) {
             logger.error("Erro ao buscar usuário: ", e);
-            throw new NotFoundException("");
-        } catch (RuntimeException e) {
+            throw e;
+        } catch (InternalServerException e) {
             logger.error("Erro inesperado ao alterar usuário: ", e);
-            throw new  InternalServerException(e.getMessage());
+            throw e;
         }
     }
 
     public void deleteUser(Long id) {
         try {
+            userValidator.validateAndGetUser(id);
             userDataService.deleteUser(id);
         } catch (NotFoundException e) {
             logger.error("Erro ao buscar usuário: ", e);
-            throw new NotFoundException("");
-        } catch (RuntimeException e) {
+            throw e;
+        } catch (InternalServerException e) {
             logger.error("Erro inesperado ao deletar usuário: ", e);
-            throw new InternalServerException(e.getMessage());
+            throw e;
         }
     }
 }
