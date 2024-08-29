@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.br.pessoal_sync.domain.dto.UserDto;
-import com.br.pessoal_sync.domain.exception.ConflictException;
 import com.br.pessoal_sync.domain.exception.InternalServerException;
 import com.br.pessoal_sync.domain.exception.NotFoundException;
 import com.br.pessoal_sync.domain.model.User;
