@@ -1,21 +1,20 @@
 package com.br.pessoal_sync.unit;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.br.pessoal_sync.domain.dto.UserDto;
-import com.br.pessoal_sync.domain.exception.ConflictException;
-import com.br.pessoal_sync.domain.exception.NotFoundException;
 import com.br.pessoal_sync.domain.model.User;
-import com.br.pessoal_sync.http.validator.UserValidator;
+import com.br.pessoal_sync.repository.UserRepository;
 import com.br.pessoal_sync.service.user.UserImplService;
-import com.br.pessoal_sync.service.user.UserService;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,41 +27,32 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class UserServiceTest {
 
     @Mock
-    private UserValidator userValidator;
-
-    @Mock
-    private UserImplService userDataService;
+    UserRepository userRepository;
 
     @InjectMocks
-    private UserService userService;
+    private UserImplService userService;
 
     @Test
     @DisplayName("should create a user with success")
     void shouldCreateUserWithSuccess() {
         // Arange
-        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "064.380.240-15", true);
+        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "914.667.290-74", true);
+        User user = new User();
+        user.setId(1L);
+        user.setName(userDto.name());
+        user.setEmail(userDto.email());
+        user.setCpf(userDto.cpf());
+        user.setIsActive(true);
+        user.setCreatedAt(Instant.now());
+        when(userRepository.save(any(User.class))).thenReturn(user);
 
         // Act
-        when(userDataService.createUser(userDto)).thenReturn(1L);
         Long userId = userService.createUser(userDto);
 
         // Assert
         assertNotNull(userId);
-        verify(userValidator).validateUser(userDto);
-        verify(userDataService).createUser(userDto);
-    }
-
-    @Test
-    @DisplayName("should create a user with conflict exception")
-    void shouldCreateUserConflictException() {
-        // Arange
-        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "064.380.240-15", true);
-
-        // Act
-        doThrow(new ConflictException("Nome já está em uso.")).when(userValidator).validateUser(userDto);
-
-        // Assert
-        assertThrows(ConflictException.class, () -> userService.createUser(userDto));
+        assertEquals(user.getId(), userId);
+        verify(userRepository).save(any(User.class));
     }
 
     @Test
@@ -70,8 +60,8 @@ public class UserServiceTest {
     void shouldRetrieveUserById() {
         // Arrange
         Long userId = 1L;
-        User user = new User("Dell", "dell.dev@email.com", "123.456.789-01", true, Instant.now(), null);
-        when(userDataService.getUser(userId)).thenReturn(Optional.of(user));
+        User user = new User("Dell", "dell.dev@email.com", "914.667.290-74", true, Instant.now(), null);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         // Act
         Optional<User> result = userService.getUser(userId);
@@ -79,20 +69,7 @@ public class UserServiceTest {
         // Assert
         assertTrue(result.isPresent());
         assertEquals(user, result.get());
-        verify(userDataService).getUser(userId);
-    }
-
-    @Test
-    @DisplayName("should retrieve a user by id with notFound exception")
-    void shouldRetrieveUserByIdNotFoundException() {
-        // Arange
-        Long userId = 1L;
-
-        // Act
-        doThrow(new NotFoundException("Usuário não encontrado.")).when(userValidator).validateAndGetUser(userId);
-
-        // Assert
-        assertThrows(NotFoundException.class, () -> userService.getUser(userId));
+        verify(userRepository).findById(userId);
     }
 
     @Test
@@ -100,10 +77,10 @@ public class UserServiceTest {
     void shouldRetrieveAllUsers() {
         // Arrange
         List<User> users = Arrays.asList(
-            new User("Dell", "dell.dev@email.com", "123.456.789-01", true, Instant.now(), null),
-            new User("Alice", "alice@example.com", "987.654.321-00", false, Instant.now(), null)
+            new User("Dell", "dell.dev@email.com", "914.667.290-74", true, Instant.now(), null),
+            new User("Ashiley", "ashiley@email.com", "662.569.440-11", false, Instant.now(), null)
         );
-        when(userDataService.getUsers()).thenReturn(users);
+        when(userRepository.findAll()).thenReturn(users);
 
         // Act
         List<User> result = userService.getUsers();
@@ -112,38 +89,40 @@ public class UserServiceTest {
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals(users, result);
-        verify(userDataService).getUsers();
+        verify(userRepository).findAll();
     }
 
     @Test
     @DisplayName("should update a user with success")
     void shouldUpdateUserWithSuccess() {
         // Arrange
-        Long userId = 1L;
-        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "123.456.789-01", true);
-        when(userDataService.updateUser(userId, userDto)).thenReturn(userId);
+        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "914.667.290-74", true);
+        User existingUser  = new User();
+        existingUser.setId(1L);
+        existingUser.setName(userDto.name());
+        existingUser.setEmail(userDto.email());
+        existingUser.setCpf(userDto.cpf());
+        existingUser.setIsActive(true);
+        existingUser.setUpdatedAt(Instant.now());
+
+        User updatedUser = new User();
+        updatedUser.setId(existingUser.getId());
+        updatedUser.setName(userDto.name());
+        updatedUser.setEmail(userDto.email());
+        updatedUser.setCpf(userDto.cpf());
+        updatedUser.setIsActive(userDto.active());
+        updatedUser.setUpdatedAt(Instant.now());
+
+        when(userRepository.findById(updatedUser.getId())).thenReturn(Optional.of(existingUser));
+        when(userRepository.save(any(User.class))).thenReturn(updatedUser);
 
         // Act
-        Long result = userService.updateUser(userId, userDto);
+        Long userId = userService.updateUser(existingUser.getId(), userDto);
 
         // Assert
-        assertNotNull(result);
-        assertEquals(userId, result);
-        verify(userDataService).updateUser(userId, userDto);
-    }
-
-    @Test
-    @DisplayName("should update a user with notFound exception")
-    void shouldUpdateUserNotFoundException() {
-        // Arange
-        Long userId = 1L;
-        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "123.456.789-01", true);
-
-        // Act
-        doThrow(new NotFoundException("Usuário não encontrado.")).when(userValidator).validateAndGetUser(userId);
-
-        // Assert
-        assertThrows(NotFoundException.class, () -> userService.updateUser(userId, userDto));
+        assertNotNull(userId);
+        assertEquals(updatedUser.getId(), userId);
+        verify(userRepository).save(any(User.class));
     }
 
     @Test
@@ -151,25 +130,72 @@ public class UserServiceTest {
     void shouldDeleteUserWithSuccess() {
         // Arrange
         Long userId = 1L;
+        doNothing().when(userRepository).deleteById(userId);
 
-        // Act
-        userService.deleteUser(userId);
-
-        // Assert
-        verify(userDataService).deleteUser(userId);
+        // Act and Assert
+        assertDoesNotThrow(() -> userService.deleteUser(userId));
+        verify(userRepository).deleteById(userId);
     }
 
     @Test
-    @DisplayName("should update a user with notFound exception")
-    void shouldDeleteUserNotFoundException() {
+    @DisplayName("should validate a user name conflict message")
+    void shouldvalidateUserNameConflictMessage() {
         // Arange
-        Long userId = 1L;
+        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "914.667.290-74", true);
+        when(userRepository.findByName(userDto.name())).thenReturn(Collections.singletonList(new User()));
 
         // Act
-        doThrow(new NotFoundException("Usuário não encontrado.")).when(userValidator).validateAndGetUser(userId);
+        String result = userService.validateUser(userDto);
 
         // Assert
-        assertThrows(NotFoundException.class, () -> userService.deleteUser(userId));
+        assertEquals("Nome já está em uso.", result);
+    }
+
+    @Test
+    @DisplayName("should validate a user e-mail conflict message")
+    void shouldvalidateUserEmailConflictMessage() {
+        // Arange
+        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "914.667.290-74", true);
+        when(userRepository.findByName(userDto.name())).thenReturn(Collections.emptyList());
+        when(userRepository.findByEmail(userDto.email())).thenReturn(Collections.singletonList(new User()));
+
+        // Act
+        String result = userService.validateUser(userDto);
+
+        // Assert
+        assertEquals("E-mail já está em uso.", result);
+    }
+
+    @Test
+    @DisplayName("should validate a user cpf conflict message")
+    void shouldvalidateUserCpfConflictMessage() {
+        // Arange
+        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "914.667.290-74", true);
+        when(userRepository.findByName(userDto.name())).thenReturn(Collections.emptyList());
+        when(userRepository.findByEmail(userDto.email())).thenReturn(Collections.emptyList());
+        when(userRepository.findByCpf(userDto.cpf())).thenReturn(Collections.singletonList(new User()));
+
+        // Act
+        String result = userService.validateUser(userDto);
+
+        // Assert
+        assertEquals("CPF já está em uso.", result);
+    }
+
+    @Test
+    @DisplayName("should validate a user error conflict message")
+    void shouldvalidateUserErrorConflictMessage() {
+        // Arange
+        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "914.667.290-74", true);
+        when(userRepository.findByName(userDto.name())).thenReturn(Collections.emptyList());
+        when(userRepository.findByEmail(userDto.email())).thenReturn(Collections.emptyList());
+        when(userRepository.findByCpf(userDto.cpf())).thenReturn(Collections.emptyList());
+
+        // Act
+        String result = userService.validateUser(userDto);
+
+        // Assert
+        assertEquals("Erro na validação.", result);
     }
 
 }

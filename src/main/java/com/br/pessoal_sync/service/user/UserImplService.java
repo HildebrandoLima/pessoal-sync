@@ -86,7 +86,7 @@ public class UserImplService implements UserService {
         if (!userRepository.findByCpf(userDto.cpf()).isEmpty()) {
             return "CPF já está em uso.";
         }
-        return "Erro na validação";
+        return "Erro na validação.";
     }
 
     public Optional<User> validateGetUser(Long id) {
