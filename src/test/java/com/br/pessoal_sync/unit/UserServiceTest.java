@@ -195,7 +195,8 @@ public class UserServiceTest {
         String result = userService.validateUser(userDto);
 
         // Assert
-        assertEquals("Erro na validação.", result);
+        assertNull(result);
+        assertEquals(null, result);
     }
 
 }

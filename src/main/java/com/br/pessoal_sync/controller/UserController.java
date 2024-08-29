@@ -36,9 +36,12 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<Response> createUser(@Valid @RequestBody UserDto userDto) {
-        validateUserConflict(userDto);
-        Long user = userService.createUser(userDto);
-        return response("Registro criado.", List.of(user), HttpStatus.CREATED);
+        String message = userService.validateUser(userDto);
+        if (message != null) {
+            throw new ConflictException(message);
+        }
+        Long userId = userService.createUser(userDto);
+        return response("Registro criado.", List.of(userId), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -71,11 +74,6 @@ public class UserController {
     private void validateUserException(Long id) {
         userService.validateGetUser(id)
         .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
-    }
-
-    public void validateUserConflict(UserDto userDto) {
-        String message = userService.validateUser(userDto);
-        throw new ConflictException(message);
     }
 
     private ResponseEntity<Response> response(String message, Object data, HttpStatus status) {
