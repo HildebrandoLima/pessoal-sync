@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import com.br.pessoal_sync.domain.dto.UserDto;
 import com.br.pessoal_sync.domain.exception.InternalServerException;
-import com.br.pessoal_sync.domain.exception.NotFoundException;
 import com.br.pessoal_sync.domain.model.User;
 import com.br.pessoal_sync.repository.UserRepository;
 
@@ -49,11 +48,8 @@ public class UserImplService implements UserService {
         return userRepository.findAll();
     }
 
-    public Long updateUser(Long id, UserDto userDto) {
+    public Long updateUser(User user, UserDto userDto) {
         try {
-            User user = userRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
-
             user.setName(userDto.name());
             user.setEmail(userDto.email());
             user.setIsActive(userDto.active());

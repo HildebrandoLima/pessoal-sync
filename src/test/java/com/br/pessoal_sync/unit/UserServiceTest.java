@@ -60,7 +60,7 @@ public class UserServiceTest {
     void shouldRetrieveUserById() {
         // Arrange
         Long userId = 1L;
-        User user = new User("Dell", "dell.dev@email.com", "914.667.290-74", true, Instant.now(), null);
+        User user = new User(1L, "Dell", "dell.dev@email.com", "914.667.290-74", true, Instant.now(), null);
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
         // Act
@@ -77,8 +77,8 @@ public class UserServiceTest {
     void shouldRetrieveAllUsers() {
         // Arrange
         List<User> users = Arrays.asList(
-            new User("Dell", "dell.dev@email.com", "914.667.290-74", true, Instant.now(), null),
-            new User("Ashiley", "ashiley@email.com", "662.569.440-11", false, Instant.now(), null)
+            new User(1L, "Dell", "dell.dev@email.com", "914.667.290-74", true, Instant.now(), null),
+            new User(2L, "Ashley", "ashley@email.com", "662.569.440-11", false, Instant.now(), null)
         );
         when(userRepository.findAll()).thenReturn(users);
 
@@ -97,6 +97,7 @@ public class UserServiceTest {
     void shouldUpdateUserWithSuccess() {
         // Arrange
         UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "914.667.290-74", true);
+
         User existingUser  = new User();
         existingUser.setId(1L);
         existingUser.setName(userDto.name());
@@ -113,14 +114,14 @@ public class UserServiceTest {
         updatedUser.setIsActive(userDto.active());
         updatedUser.setUpdatedAt(Instant.now());
 
-        when(userRepository.findById(updatedUser.getId())).thenReturn(Optional.of(existingUser));
         when(userRepository.save(any(User.class))).thenReturn(updatedUser);
 
         // Act
-        Long userId = userService.updateUser(existingUser.getId(), userDto);
+        Long userId = userService.updateUser(existingUser, userDto);
 
         // Assert
         assertNotNull(userId);
+        assertEquals(existingUser.getId(), userId);
         assertEquals(updatedUser.getId(), userId);
         verify(userRepository).save(any(User.class));
     }

@@ -4,6 +4,7 @@ import java.time.Instant;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.validator.constraints.br.CPF;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,16 +24,16 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "name", unique = true)
-    @NotBlank(message = "O nome é obrigatório")
+    @NotBlank(message = "Nome é obrigatório")
     @Size(max = 100, message = "O nome não deve exceder 100 caracteres")
     private String name;
     @Column(name = "email", unique = true)
-    @NotBlank(message = "O e-mail é obrigatório")
+    @NotBlank(message = "E-mail é obrigatório")
     @Email(message = "E-mail inválido")
     private String email;
     @Column(name = "cpf", unique = true)
-    @NotBlank(message = "O CPF é obrigatório")
-    @Size(min = 14, max = 14, message = "CPF inválido")
+    @NotBlank(message = "CPF é obrigatório")
+    @CPF(message = "CPF inválido")
     private String cpf;
     @Column(name = "active")
     private boolean active;
@@ -43,7 +44,8 @@ public class User {
 
     public User() {}
 
-    public User(String name, String email, String cpf, boolean active, Instant created_at, Instant updated_at) {
+    public User( Long id, String name, String email, String cpf, boolean active, Instant created_at, Instant updated_at) {
+        this.id = id;
         this.name = name;
         this.email = email;
         this.cpf = cpf;

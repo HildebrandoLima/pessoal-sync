@@ -20,6 +20,7 @@ import com.br.pessoal_sync.domain.dto.UserDto;
 import com.br.pessoal_sync.domain.exception.ConflictException;
 import com.br.pessoal_sync.domain.exception.NotFoundException;
 import com.br.pessoal_sync.domain.exception.Response;
+import com.br.pessoal_sync.domain.model.User;
 import com.br.pessoal_sync.service.user.UserImplService;
 
 @RestController
@@ -54,21 +55,23 @@ public class UserController {
     @GetMapping
     public ResponseEntity<Response> getUsers() {
         var users = userService.getUsers();
-        return response("Registros listados.", List.of(users), HttpStatus.OK);
+        return response("Registros listados.", users, HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Response> updateUser(@PathVariable("id") Long id, @Valid @RequestBody UserDto userDto) {
-        validateUserException(id);
-        userService.updateUser(id, userDto);
-        return response("Registro alterado.", List.of(), HttpStatus.NO_CONTENT);
+        User user = userService.validateGetUser(id)
+        .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
+
+        userService.updateUser(user, userDto);
+        return response("Registro alterado.", List.of(), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Response> deleteUserById(@PathVariable("id") Long id) {
         validateUserException(id);
         userService.deleteUser(id);
-        return response("Registro deletado.", List.of(), HttpStatus.NO_CONTENT);
+        return response("Registro deletado.", List.of(), HttpStatus.OK);
     }
 
     private void validateUserException(Long id) {
