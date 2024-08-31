@@ -3,12 +3,14 @@ package com.br.pessoal_sync.service.user;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.br.pessoal_sync.domain.dto.AddressDto;
 import com.br.pessoal_sync.domain.dto.UserDto;
 import com.br.pessoal_sync.domain.exception.InternalServerException;
 import com.br.pessoal_sync.domain.model.User;
@@ -40,12 +42,69 @@ public class UserImplService implements UserService {
         }
     }
 
-    public Optional<User> getUser(Long id) {
-        return userRepository.findById(id);
+    public UserDto getUser(Long id) {
+        return validateGetUser(id).map(user -> {
+            List<AddressDto> addressDtos = user.getAddress()
+            .stream()
+            .map(address -> new AddressDto(
+                address.getId(),
+                address.getCep(),
+                address.getLogradouro(),
+                address.getComplemento(),
+                address.getBairro(),
+                address.getLocalidade(),
+                address.getUf(),
+                address.getUser().getId(),
+                address.getIsActive(),
+                address.getCreatedAt(),
+                address.getUpdatedAt()
+            )).toList();
+
+            return new UserDto(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getCpf(),
+                user.isActive(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
+                addressDtos
+            );
+        }).orElse(null);
     }
 
-    public List<User> getUsers() {
-        return userRepository.findAll();
+    public List<UserDto> getUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+            .map(user -> {
+                List<AddressDto> addressDtos = user.getAddress()
+                    .stream()
+                    .map(address -> new AddressDto(
+                        address.getId(),
+                        address.getCep(),
+                        address.getLogradouro(),
+                        address.getComplemento(),
+                        address.getBairro(),
+                        address.getLocalidade(),
+                        address.getUf(),
+                        user.getId(),
+                        address.getIsActive(),
+                        address.getCreatedAt(),
+                        address.getUpdatedAt()
+                    )).collect(Collectors.toList());
+
+                return new UserDto(
+                    user.getId(),
+                    user.getName(),
+                    user.getEmail(),
+                    user.getCpf(),
+                    user.isActive(),
+                    user.getCreatedAt(),
+                    user.getUpdatedAt(),
+                    addressDtos
+                );
+            })
+            .collect(Collectors.toList());
     }
 
     public Long updateUser(User user, UserDto userDto) {

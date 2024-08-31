@@ -1,0 +1,15 @@
+2024-08-31 09:16:59 [main] ERROR o.s.b.d.LoggingFailureAnalysisReporter - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 0 of constructor in com.br.pessoal_sync.controller.AddressController required a bean of type 'com.br.pessoal_sync.service.address.AddressImplService' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'com.br.pessoal_sync.service.address.AddressImplService' in your configuration.
+

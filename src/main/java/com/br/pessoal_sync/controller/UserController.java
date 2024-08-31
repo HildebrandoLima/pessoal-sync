@@ -49,7 +49,10 @@ public class UserController {
     public ResponseEntity<Response> getUserById(@PathVariable("id") Long id) {
         validateUserException(id);
         var user = userService.getUser(id);
-        return response("Registro listado.", List.of(user), HttpStatus.OK);
+        if (user == null) {
+            throw new NotFoundException("Usuário não encontrado.");
+        }
+        return response("Registro listado.", user, HttpStatus.OK);
     }
 
     @GetMapping
