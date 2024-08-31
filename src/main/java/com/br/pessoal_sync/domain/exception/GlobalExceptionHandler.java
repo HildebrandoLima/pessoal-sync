@@ -1,6 +1,5 @@
 package com.br.pessoal_sync.domain.exception;
 
-import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -8,6 +7,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.br.pessoal_sync.domain.model.Response;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,30 +20,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Response> handleValidationExceptions(MethodArgumentNotValidException e) {
-        Map<String, String> errors = e.getBindingResult().getAllErrors().stream()
-            .collect(Collectors.toMap(
-                error -> ((FieldError) error).getField(),
-                error -> error.getDefaultMessage()
-            ));
 
-        Response response = new Response(
-            "Informe os dados corretamente.",
-            errors.entrySet().stream()
-                .map(entry -> Map.of(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList()),
-                e.getMessage(),
-            HttpStatus.BAD_REQUEST.value()
-        );
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    }
+        Map<String, List<String>> errors = new HashMap<>();
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Response> handleConstraintViolation(ConstraintViolationException e) {
-        Map<String, String> errors = new HashMap<>();
-        e.getConstraintViolations().forEach(violation -> {
-            String fieldName = violation.getPropertyPath().toString();
-            String errorMessage = violation.getMessage();
-            errors.put(fieldName, errorMessage);
+        e.getBindingResult().getAllErrors().forEach(error -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.computeIfAbsent(fieldName, k -> new ArrayList<>()).add(errorMessage);
         });
 
         Response response = new Response(
@@ -55,17 +40,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<Response> handleConflictException(ConflictException e) {
-        Response response = new Response(
-            "Registro já existe.",
-            List.of(),
-            e.getMessage(),
-            HttpStatus.CONFLICT.value()
-        );
-        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
-    }
-
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Response> handleResourceNotFound(NotFoundException e) {
         Response response = new Response(
@@ -75,6 +49,17 @@ public class GlobalExceptionHandler {
             HttpStatus.NOT_FOUND.value()
         );
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<Response> handleConflictException(ConflictException e) {
+        Response response = new Response(
+            "Registro já existe.",
+            List.of(),
+            e.getMessage(),
+            HttpStatus.CONFLICT.value()
+        );
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(Exception.class)

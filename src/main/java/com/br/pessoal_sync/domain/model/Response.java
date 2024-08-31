@@ -1,4 +1,4 @@
-package com.br.pessoal_sync.domain.exception;
+package com.br.pessoal_sync.domain.model;
 
 public class Response {
     private String message;

@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.br.pessoal_sync.domain.dto.UserDto;
 import com.br.pessoal_sync.domain.exception.ConflictException;
 import com.br.pessoal_sync.domain.exception.NotFoundException;
-import com.br.pessoal_sync.domain.exception.Response;
+import com.br.pessoal_sync.domain.model.Response;
 import com.br.pessoal_sync.domain.model.User;
 import com.br.pessoal_sync.service.user.UserImplService;
 
@@ -42,7 +42,7 @@ public class UserController {
             throw new ConflictException(message);
         }
         Long userId = userService.createUser(userDto);
-        return response("Registro criado.", List.of(userId), HttpStatus.CREATED);
+        return response("Registro criado.", userId, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")

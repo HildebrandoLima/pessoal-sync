@@ -52,7 +52,7 @@ public class UserControllerTest {
                 .content(userDtoJson))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.message").value("Registro criado."))
-                .andExpect(jsonPath("$.data[0]").value(userId.intValue()))
+                .andExpect(jsonPath("$.data").value(userId.intValue()))
                 .andExpect(jsonPath("$.details").value(""))
                 .andExpect(jsonPath("$.status").value(201));
     }
@@ -66,8 +66,10 @@ public class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userDtoJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.data[0].name")
-                .value("Nome é obrigatório."));
+                .andExpect(jsonPath("$.message").value("Informe os dados corretamente."))
+                .andExpect(jsonPath("$.data[0].name").value("Nome é obrigatório."))
+                .andExpect(jsonPath("$.details").exists())
+                .andExpect(jsonPath("$.status").value(400));
     }
 
     @Test
@@ -79,8 +81,10 @@ public class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userDtoJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.data[0].name")
-                .value("O nome não deve exceder 100 caracteres."));
+                .andExpect(jsonPath("$.message").value("Informe os dados corretamente."))
+                .andExpect(jsonPath("$.data[0].name").value("O nome não deve exceder 100 caracteres."))
+                .andExpect(jsonPath("$.details").exists())
+                .andExpect(jsonPath("$.status").value(400));
     }
 
     @Test
@@ -92,8 +96,10 @@ public class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userDtoJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.data[0].email")
-                .value("E-mail é obrigatório."));
+                .andExpect(jsonPath("$.message").value("Informe os dados corretamente."))
+                .andExpect(jsonPath("$.data[0].email").value("E-mail é obrigatório."))
+                .andExpect(jsonPath("$.details").exists())
+                .andExpect(jsonPath("$.status").value(400));
     }
 
     @Test
@@ -105,8 +111,10 @@ public class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userDtoJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.data[0].email")
-                .value("E-mail inválido."));
+                .andExpect(jsonPath("$.message").value("Informe os dados corretamente."))
+                .andExpect(jsonPath("$.data[0].email").value("E-mail inválido."))
+                .andExpect(jsonPath("$.details").exists())
+                .andExpect(jsonPath("$.status").value(400));
     }
 
     @Test
@@ -115,11 +123,14 @@ public class UserControllerTest {
         String userDtoJson = "{ \"name\": \"Dell\", \"email\": \"dell.dev@email.com\", \"cpf\": \"\"}";
 
         mockMvc.perform(post("/api/users")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(userDtoJson))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.data[0].cpf")
-                .value("CPF é obrigatório"));
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(userDtoJson))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Informe os dados corretamente."))
+            .andExpect(jsonPath("$.data[0].cpf[0]").value("CPF inválido."))
+            .andExpect(jsonPath("$.data[0].cpf[1]").value("CPF é obrigatório."))
+            .andExpect(jsonPath("$.details").exists())
+            .andExpect(jsonPath("$.status").value(400));
     }
 
     @Test
@@ -131,8 +142,10 @@ public class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(userDtoJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.data[0].cpf")
-                .value("CPF inválido."));
+                .andExpect(jsonPath("$.message").value("Informe os dados corretamente."))
+                .andExpect(jsonPath("$.data[0].cpf").value("CPF inválido."))
+                .andExpect(jsonPath("$.details").exists())
+                .andExpect(jsonPath("$.status").value(400));
     }
 
     @Test

@@ -23,28 +23,34 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(name = "name", unique = true)
-    @NotBlank(message = "Nome é obrigatório")
-    @Size(max = 100, message = "O nome não deve exceder 100 caracteres")
+    @NotBlank()
+    @Size(max = 100)
     private String name;
+
     @Column(name = "email", unique = true)
-    @NotBlank(message = "E-mail é obrigatório")
-    @Email(message = "E-mail inválido")
+    @NotBlank()
+    @Email()
     private String email;
+
     @Column(name = "cpf", unique = true)
-    @NotBlank(message = "CPF é obrigatório")
-    @CPF(message = "CPF inválido")
+    @NotBlank()
+    @CPF()
     private String cpf;
+
     @Column(name = "active")
     private boolean active;
+
     @CreationTimestamp
     private Instant created_at;
+
     @UpdateTimestamp
     private Instant updated_at;
 
     public User() {}
 
-    public User( Long id, String name, String email, String cpf, boolean active, Instant created_at, Instant updated_at) {
+    public User(Long id, String name, String email, String cpf, boolean active, Instant created_at, Instant updated_at) {
         this.id = id;
         this.name = name;
         this.email = email;
