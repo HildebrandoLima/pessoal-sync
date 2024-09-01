@@ -1,6 +1,7 @@
 package com.br.pessoal_sync.service.user;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,22 +45,22 @@ public class UserImplService implements UserService {
 
     public UserDto getUser(Long id) {
         return validateGetUser(id).map(user -> {
-            List<AddressDto> addressDtos = user.getAddress()
-            .stream()
-            .map(address -> new AddressDto(
-                address.getId(),
-                address.getCep(),
-                address.getLogradouro(),
-                address.getComplemento(),
-                address.getBairro(),
-                address.getLocalidade(),
-                address.getUf(),
-                address.getUser().getId(),
-                address.getIsActive(),
-                address.getCreatedAt(),
-                address.getUpdatedAt()
-            )).toList();
-
+            List<AddressDto> addressDtos = user.getAddress() != null ? user.getAddress()
+                .stream()
+                .map(address -> new AddressDto(
+                    address.getId(),
+                    address.getCep(),
+                    address.getLogradouro(),
+                    address.getComplemento(),
+                    address.getBairro(),
+                    address.getLocalidade(),
+                    address.getUf(),
+                    address.getUser() != null ? address.getUser().getId() : null,
+                    address.getIsActive(),
+                    address.getCreatedAt(),
+                    address.getUpdatedAt()
+                )).toList() : Collections.emptyList();
+    
             return new UserDto(
                 user.getId(),
                 user.getName(),
@@ -71,7 +72,7 @@ public class UserImplService implements UserService {
                 addressDtos
             );
         }).orElse(null);
-    }
+    }    
 
     public List<UserDto> getUsers() {
         List<User> users = userRepository.findAll();

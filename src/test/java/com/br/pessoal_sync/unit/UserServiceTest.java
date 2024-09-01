@@ -11,7 +11,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.br.pessoal_sync.domain.dto.AddressDto;
 import com.br.pessoal_sync.domain.dto.UserDto;
+import com.br.pessoal_sync.domain.model.Address;
 import com.br.pessoal_sync.domain.model.User;
 import com.br.pessoal_sync.repository.UserRepository;
 import com.br.pessoal_sync.service.user.UserImplService;
@@ -32,11 +34,13 @@ public class UserServiceTest {
     @InjectMocks
     private UserImplService userService;
 
+    private List<AddressDto> addressListEmpity = Collections.emptyList();
+    private UserDto userDto = new UserDto(null, "Dell", "dell.dev@email.com", "914.667.290-74", true, null, null, addressListEmpity);
+
     @Test
     @DisplayName("should create a user with success")
     void shouldCreateUserWithSuccess() {
         // Arange
-        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "914.667.290-74", true);
         User user = new User();
         user.setId(1L);
         user.setName(userDto.name());
@@ -60,35 +64,60 @@ public class UserServiceTest {
     void shouldRetrieveUserById() {
         // Arrange
         Long userId = 1L;
-        User user = new User(1L, "Dell", "dell.dev@email.com", "914.667.290-74", true, Instant.now(), null);
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        Instant date = Instant.now();
+    
+        User userModel = new User(userId, "Dell", "dell.dev@email.com", "914.667.290-74", true, date, date, null);
+    
+        Address addressModel = new Address(1L, "70361-721", "Rua A", "...", "Centro", "Fortaleza", "CE", true, date, date, userModel);
+        List<Address> addressModelList = Collections.singletonList(addressModel);
+    
+        userModel.setAddress(addressModelList);
 
+        AddressDto addressDto = new AddressDto(1L, "70361-721", "Rua A", "...", "Centro", "Fortaleza", "CE", userId, true, date, date);
+        UserDto userDto = new UserDto(userId, "Dell", "dell.dev@email.com", "914.667.290-74", true, date, date, Collections.singletonList(addressDto));
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userModel));
+    
         // Act
-        Optional<User> result = userService.getUser(userId);
-
+        UserDto result = userService.getUser(userId);
+    
         // Assert
-        assertTrue(result.isPresent());
-        assertEquals(user, result.get());
+        assertNotNull(result);
+        assertEquals(userDto, result);
         verify(userRepository).findById(userId);
     }
 
     @Test
     @DisplayName("should retrieve all users")
     void shouldRetrieveAllUsers() {
+        Instant date = Instant.now();
+
+        AddressDto addressDto = new AddressDto(1L, "70361-721", "Rua A", "...", "Centro", "Fortaleza", "CE", 1L, true, date, date);
+        Address addressModel = new Address(1L, "70361-721", "Rua A", "...", "Centro", "Fortaleza", "CE", true, date, date, null);
+
+        List<AddressDto> addressDtoList = Collections.singletonList(addressDto);
+        List<Address> addressModelList = Collections.singletonList(addressModel);
+        List<Address> addressListEmpty = Collections.emptyList();
+
         // Arrange
-        List<User> users = Arrays.asList(
-            new User(1L, "Dell", "dell.dev@email.com", "914.667.290-74", true, Instant.now(), null),
-            new User(2L, "Ashley", "ashley@email.com", "662.569.440-11", false, Instant.now(), null)
+        List<UserDto> usersDto = Arrays.asList(
+            new UserDto(1L, "Dell", "dell.dev@email.com", "914.667.290-74", true, date, date, addressDtoList),
+            new UserDto(2L, "Ashley", "ashley@email.com", "662.569.440-11", false, date, date, addressListEmpity)
         );
-        when(userRepository.findAll()).thenReturn(users);
+        List<User> usersModel =  Arrays.asList(
+            new User(1L, "Dell", "dell.dev@email.com", "914.667.290-74", true, date, date, addressModelList),
+            new User(2L, "Ashley", "ashley@email.com", "662.569.440-11", false, date, date, addressListEmpty)
+        );
+
+        when(userRepository.findAll()).thenReturn(usersModel);
 
         // Act
-        List<User> result = userService.getUsers();
+        List<UserDto> result = userService.getUsers();
 
         // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals(users, result);
+        assertEquals(usersDto, result);
         verify(userRepository).findAll();
     }
 
@@ -96,8 +125,6 @@ public class UserServiceTest {
     @DisplayName("should update a user with success")
     void shouldUpdateUserWithSuccess() {
         // Arrange
-        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "914.667.290-74", true);
-
         User existingUser  = new User();
         existingUser.setId(1L);
         existingUser.setName(userDto.name());
@@ -142,7 +169,6 @@ public class UserServiceTest {
     @DisplayName("should validate a user name conflict message")
     void shouldvalidateUserNameConflictMessage() {
         // Arange
-        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "914.667.290-74", true);
         when(userRepository.findByName(userDto.name())).thenReturn(Collections.singletonList(new User()));
 
         // Act
@@ -156,7 +182,6 @@ public class UserServiceTest {
     @DisplayName("should validate a user e-mail conflict message")
     void shouldvalidateUserEmailConflictMessage() {
         // Arange
-        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "914.667.290-74", true);
         when(userRepository.findByName(userDto.name())).thenReturn(Collections.emptyList());
         when(userRepository.findByEmail(userDto.email())).thenReturn(Collections.singletonList(new User()));
 
@@ -171,7 +196,6 @@ public class UserServiceTest {
     @DisplayName("should validate a user cpf conflict message")
     void shouldvalidateUserCpfConflictMessage() {
         // Arange
-        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "914.667.290-74", true);
         when(userRepository.findByName(userDto.name())).thenReturn(Collections.emptyList());
         when(userRepository.findByEmail(userDto.email())).thenReturn(Collections.emptyList());
         when(userRepository.findByCpf(userDto.cpf())).thenReturn(Collections.singletonList(new User()));
@@ -187,7 +211,6 @@ public class UserServiceTest {
     @DisplayName("should validate a user error conflict message")
     void shouldvalidateUserErrorConflictMessage() {
         // Arange
-        UserDto userDto = new UserDto("Dell", "dell.dev@email.com", "914.667.290-74", true);
         when(userRepository.findByName(userDto.name())).thenReturn(Collections.emptyList());
         when(userRepository.findByEmail(userDto.email())).thenReturn(Collections.emptyList());
         when(userRepository.findByCpf(userDto.cpf())).thenReturn(Collections.emptyList());

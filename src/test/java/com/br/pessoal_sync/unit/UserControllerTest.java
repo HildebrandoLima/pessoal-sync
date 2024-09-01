@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +24,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.br.pessoal_sync.controller.UserController;
+import com.br.pessoal_sync.domain.dto.AddressDto;
 import com.br.pessoal_sync.domain.dto.UserDto;
 import com.br.pessoal_sync.domain.model.User;
 import com.br.pessoal_sync.service.user.UserImplService;
@@ -153,24 +155,42 @@ public class UserControllerTest {
     void shouldReturnGetUserById() throws Exception {
         Instant createdAt = Instant.now();
         Instant updatedAt = Instant.now();
-
         Long userId = 1L;
-        User user = new User(userId, "Fátima Catarina Mariah Brito", "fatima-brito86@moncoes.com.br", "175.471.282-70", true, createdAt, updatedAt);
+    
+        AddressDto addressDto = new AddressDto(1L, "70361-721", "Rua A", "...", "Centro", "Fortaleza", "CE", userId, true, createdAt, updatedAt);
 
-        when(userService.validateGetUser(userId)).thenReturn(Optional.of(user));
-        when(userService.getUser(userId)).thenReturn(Optional.of(user));
+        List<AddressDto> addressList = Collections.singletonList(addressDto);
+
+        UserDto userDto = new UserDto(userId, "Fátima Catarina Mariah Brito", "fatima-brito86@moncoes.com.br", "175.471.282-70", true, createdAt, updatedAt, addressList);
+
+        User userModel = new User();
+
+        when(userService.validateGetUser(userId)).thenReturn(Optional.of(userModel));
+        when(userService.getUser(userId)).thenReturn(userDto);
 
         mockMvc.perform(get("/api/users/{id}", userId)
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.message").value("Registro listado."))
-            .andExpect(jsonPath("$.data[0].id").value(userId))
-            .andExpect(jsonPath("$.data[0].name").value("Fátima Catarina Mariah Brito"))
-            .andExpect(jsonPath("$.data[0].email").value("fatima-brito86@moncoes.com.br"))
-            .andExpect(jsonPath("$.data[0].cpf").value("175.471.282-70"))
-            .andExpect(jsonPath("$.data[0].isActive").value(true))
-            .andExpect(jsonPath("$.data[0].updatedAt").value(updatedAt.toString()))
-            .andExpect(jsonPath("$.data[0].createdAt").value(createdAt.toString()))
+            .andExpect(jsonPath("$.data.id").value(userDto.id()))
+            .andExpect(jsonPath("$.data.name").value(userDto.name()))
+            .andExpect(jsonPath("$.data.email").value(userDto.email()))
+            .andExpect(jsonPath("$.data.cpf").value(userDto.cpf()))
+            .andExpect(jsonPath("$.data.active").value(userDto.active()))
+            .andExpect(jsonPath("$.data.updatedAt").value(userDto.createdAt().toString()))
+            .andExpect(jsonPath("$.data.createdAt").value(userDto.updatedAt().toString()))
+            .andExpect(jsonPath("$.data.addresses[0]").exists())
+            .andExpect(jsonPath("$.data.addresses[0].id").value(userDto.addresses().get(0).id()))
+            .andExpect(jsonPath("$.data.addresses[0].cep").value(userDto.addresses().get(0).cep()))
+            .andExpect(jsonPath("$.data.addresses[0].logradouro").value(userDto.addresses().get(0).logradouro()))
+            .andExpect(jsonPath("$.data.addresses[0].complemento").value(userDto.addresses().get(0).complemento()))
+            .andExpect(jsonPath("$.data.addresses[0].bairro").value(userDto.addresses().get(0).bairro()))
+            .andExpect(jsonPath("$.data.addresses[0].localidade").value(userDto.addresses().get(0).localidade()))
+            .andExpect(jsonPath("$.data.addresses[0].uf").value(userDto.addresses().get(0).uf()))
+            .andExpect(jsonPath("$.data.addresses[0].userId").value(userDto.addresses().get(0).userId()))
+            .andExpect(jsonPath("$.data.addresses[0].active").value(userDto.addresses().get(0).active()))
+            .andExpect(jsonPath("$.data.addresses[0].createdAt").value(userDto.addresses().get(0).createdAt().toString()))
+            .andExpect(jsonPath("$.data.addresses[0].updatedAt").value(userDto.addresses().get(0).updatedAt().toString()))
             .andExpect(jsonPath("$.details").value(""))
             .andExpect(jsonPath("$.status").value(200));
     }
@@ -182,10 +202,15 @@ public class UserControllerTest {
         Instant updatedAt0 = Instant.now();
         Instant createdAt1 = Instant.now();
         Instant updatedAt1 = Instant.now();
+    
+        AddressDto addressDto = new AddressDto(1L, "70361-721", "Rua A", "...", "Centro", "Fortaleza", "CE", 1L, true, createdAt0, updatedAt0);
 
-        List<User> users = Arrays.asList(
-            new User(1L, "Fátima Catarina Mariah Brito", "fatima-brito86@moncoes.com.br", "175.471.282-70", false, createdAt0, updatedAt0),
-            new User(2L, "Sophie Silvana da Mata", "sophie.silvana.damata@lojascentrodamoda.com.br", "767.439.425-53", true, createdAt1, updatedAt1)
+        List<AddressDto> addressList = Collections.singletonList(addressDto);
+        List<AddressDto> addressListEmpity = Collections.emptyList();
+
+        List<UserDto> users = Arrays.asList(
+            new UserDto(1L, "Fátima Catarina Mariah Brito", "fatima-brito86@moncoes.com.br", "175.471.282-70", false, createdAt0, updatedAt0, addressList),
+            new UserDto(2L, "Sophie Silvana da Mata", "sophie.silvana.damata@lojascentrodamoda.com.br", "767.439.425-53", true, createdAt1, updatedAt1, addressListEmpity)
         );
     
         when(userService.getUsers()).thenReturn(users);
@@ -195,21 +220,34 @@ public class UserControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.message").value("Registros listados."))
 
-            .andExpect(jsonPath("$.data[0].id").value(1L))
-            .andExpect(jsonPath("$.data[0].name").value("Fátima Catarina Mariah Brito"))
-            .andExpect(jsonPath("$.data[0].email").value("fatima-brito86@moncoes.com.br"))
-            .andExpect(jsonPath("$.data[0].cpf").value("175.471.282-70"))
-            .andExpect(jsonPath("$.data[0].isActive").value(false))
-            .andExpect(jsonPath("$.data[0].updatedAt").value(updatedAt0.toString()))
-            .andExpect(jsonPath("$.data[0].createdAt").value(createdAt0.toString()))
+            .andExpect(jsonPath("$.data[0].id").value(users.get(0).id()))
+            .andExpect(jsonPath("$.data[0].name").value(users.get(0).name()))
+            .andExpect(jsonPath("$.data[0].email").value(users.get(0).email()))
+            .andExpect(jsonPath("$.data[0].cpf").value(users.get(0).cpf()))
+            .andExpect(jsonPath("$.data[0].active").value(users.get(0).active()))
+            .andExpect(jsonPath("$.data[0].updatedAt").value(users.get(0).updatedAt().toString()))
+            .andExpect(jsonPath("$.data[0].createdAt").value(users.get(0).createdAt().toString()))
+            .andExpect(jsonPath("$.data[0].addresses[0]").exists())
+            .andExpect(jsonPath("$.data[0].addresses[0].id").value(users.get(0).addresses().get(0).id()))
+            .andExpect(jsonPath("$.data[0].addresses[0].cep").value(users.get(0).addresses().get(0).cep()))
+            .andExpect(jsonPath("$.data[0].addresses[0].logradouro").value(users.get(0).addresses().get(0).logradouro()))
+            .andExpect(jsonPath("$.data[0].addresses[0].complemento").value(users.get(0).addresses().get(0).complemento()))
+            .andExpect(jsonPath("$.data[0].addresses[0].bairro").value(users.get(0).addresses().get(0).bairro()))
+            .andExpect(jsonPath("$.data[0].addresses[0].localidade").value(users.get(0).addresses().get(0).localidade()))
+            .andExpect(jsonPath("$.data[0].addresses[0].uf").value(users.get(0).addresses().get(0).uf()))
+            .andExpect(jsonPath("$.data[0].addresses[0].userId").value(users.get(0).addresses().get(0).userId()))
+            .andExpect(jsonPath("$.data[0].addresses[0].active").value(users.get(0).addresses().get(0).active()))
+            .andExpect(jsonPath("$.data[0].addresses[0].createdAt").value(users.get(0).addresses().get(0).createdAt().toString()))
+            .andExpect(jsonPath("$.data[0].addresses[0].updatedAt").value(users.get(0).addresses().get(0).updatedAt().toString()))
 
-            .andExpect(jsonPath("$.data[1].id").value(2L))
-            .andExpect(jsonPath("$.data[1].name").value("Sophie Silvana da Mata"))
-            .andExpect(jsonPath("$.data[1].email").value("sophie.silvana.damata@lojascentrodamoda.com.br"))
-            .andExpect(jsonPath("$.data[1].cpf").value("767.439.425-53"))
-            .andExpect(jsonPath("$.data[1].isActive").value(true))
-            .andExpect(jsonPath("$.data[1].updatedAt").value(updatedAt1.toString()))
-            .andExpect(jsonPath("$.data[1].createdAt").value(createdAt1.toString()))
+            .andExpect(jsonPath("$.data[1].id").value(users.get(1).id()))
+            .andExpect(jsonPath("$.data[1].name").value(users.get(1).name()))
+            .andExpect(jsonPath("$.data[1].email").value(users.get(1).email()))
+            .andExpect(jsonPath("$.data[1].cpf").value(users.get(1).cpf()))
+            .andExpect(jsonPath("$.data[1].active").value(users.get(1).active()))
+            .andExpect(jsonPath("$.data[1].updatedAt").value(users.get(1).updatedAt().toString()))
+            .andExpect(jsonPath("$.data[1].createdAt").value(users.get(1).createdAt().toString()))
+            .andExpect(jsonPath("$.data[1].addresses").isEmpty())
 
             .andExpect(jsonPath("$.details").value(""))
             .andExpect(jsonPath("$.status").value(200));
