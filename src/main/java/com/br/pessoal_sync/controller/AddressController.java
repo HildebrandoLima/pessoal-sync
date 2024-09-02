@@ -38,8 +38,8 @@ public class AddressController {
         User user = addressService.validateGetUser(addressDto.userId())
         .orElseThrow(() -> new NotFoundException("Usuário não encontrado."));
 
-        addressService.createAddress(user, addressDto);
-        return response("Registro criado.", List.of(), HttpStatus.CREATED);
+        String cep = addressService.createAddress(user, addressDto);
+        return response("Registro criado.", cep, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")

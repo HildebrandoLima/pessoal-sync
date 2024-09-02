@@ -5,7 +5,7 @@ import com.br.pessoal_sync.domain.model.User;
 
 public interface AddressService {
 
-    public void createAddress(User user, AddressDto addressDto);
+    public String createAddress(User user, AddressDto addressDto);
 
     public void deleteAddress(Long id);
 

@@ -11,7 +11,7 @@ public record AddressDto(
     Long id,
 
     @NotBlank(message = "CEP é obrigatório.")
-    @Size(min = 9, max = 9)
+    @Size(min = 9, max = 9, message = "CEP inválido.")
     String cep,
 
     @NotBlank(message = "Logradouro é obrigatório.")

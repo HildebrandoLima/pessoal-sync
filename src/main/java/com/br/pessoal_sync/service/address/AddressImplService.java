@@ -28,7 +28,7 @@ public class AddressImplService implements AddressService {
         this.userRepository = userRepository;
     }
 
-    public void createAddress(User user, AddressDto addressDto) {
+    public String createAddress(User user, AddressDto addressDto) {
         try {
             var address = new Address();
             address.setCep(addressDto.cep());
@@ -40,7 +40,7 @@ public class AddressImplService implements AddressService {
             address.setIsActive(true);
             address.setCreatedAt(Instant.now());
             address.setUser(user);
-            addressRepository.save(address);
+            return addressRepository.save(address).getCep();
         } catch (InternalServerException e) {
             InternalServerMessage(e);
             throw e;
